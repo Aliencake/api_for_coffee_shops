@@ -6,6 +6,7 @@ class ProductBase(BaseModel):
     composition: str | None = None
     allergens: str | None = None
     count: int = 0
+    category: str | None = None
 
 
 class ProductCreate(ProductBase):
@@ -40,9 +41,16 @@ class ClientChangePassword(BaseModel):
     email: EmailStr
 
 
+class ClientDelete(BaseModel):
+    password: str
+    token: str
+    email: EmailStr
+
+
 class Client(ClientBase):
     id: int
     products: list[Product] = []
 
     class Config:
         orm_mode = True
+

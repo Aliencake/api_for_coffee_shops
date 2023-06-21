@@ -2,6 +2,7 @@ from bcrypt import hashpw, gensalt, checkpw
 from sqlalchemy.orm import Session
 from app import db_models, schemas
 from secrets import token_urlsafe
+from fastapi import HTTPException
 
 
 def revoke_token(db: Session, db_client: db_models.Client, input_password: str):
@@ -24,6 +25,19 @@ def change_password(db: Session, client: schemas.ClientChangePassword, db_client
         db.refresh(db_client)
         return f"Ваш пароль змінено на: {client.new_password}"
     return False
+
+
+def delete_client(db: Session, client: schemas.ClientDelete, db_client: db_models.Client):
+    if not checkpw(client.password.encode('utf-8'), db_client.hashed_password.encode('utf-8')):
+        raise HTTPException(status_code=400, detail="Не вірний пароль")
+    if not client.token == db_client.token:
+        raise HTTPException(status_code=400, detail="Не вірний токен")
+    products: db_models.Product | [] = db.query(db_models.Product).filter(db_models.Product.owner_id == db_client.id).all()
+    for product in products:
+        db.delete(product)
+    db.delete(db_client)
+    db.commit()
+    return f"Кав'ярню {db_client.coffee_shop} успішно видалено"
 
 
 def get_client(db: Session, user_id: int):
@@ -59,6 +73,11 @@ def get_client_id_by_token(db: Session, token: str):
 
 def get_products(db: Session, client_id: int):
     return db.query(db_models.Product).filter(db_models.Product.owner_id == client_id).all()
+
+
+def get_products_by_category(db: Session, client_id: int, category: str):
+    return db.query(db_models.Product).filter(db_models.Product.owner_id == client_id).\
+        filter(db_models.Product.category == category).all()
 
 
 def update_product(db: Session, product_id: int, client_id: int, item: schemas.ProductCreate):

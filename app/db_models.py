@@ -25,5 +25,6 @@ class Product(Base):
     allergens = Column(String(255), index=True)
     count = Column(Integer, index=True)
     owner_id = Column(Integer, ForeignKey("clients.id"))
+    category = Column(String(255), index=True)
 
     owner = relationship("Client", back_populates="products")

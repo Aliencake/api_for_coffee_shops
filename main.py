@@ -62,6 +62,14 @@ def change_password(client: schemas.ClientChangePassword, db: Session = Depends(
         raise HTTPException(status_code=400, detail="Користувача не знайдено")
 
 
+@app.post("/delete_account")
+def delete_account(client: schemas.ClientDelete, db: Session = Depends(get_db)):
+    db_client: db_models.Client = crud.get_client_by_email(db, email=client.email)
+    if db_client:
+        return crud.delete_client(db=db, db_client=db_client, client=client)
+    else:
+        raise HTTPException(status_code=400, detail="Користувача не знайдено")
+
 @app.get("/get_all_shops/")
 def all_shops(db: Session = Depends(get_db)):
     clients = crud.get_clients(db)
@@ -69,11 +77,20 @@ def all_shops(db: Session = Depends(get_db)):
 
 
 @app.get("/{coffee_shop}/products/")
-def read_products(coffee_shop: str, db: Session = Depends(get_db)):
+def get_products(coffee_shop: str, db: Session = Depends(get_db)):
     client: schemas.Client = crud.get_client_by_coffee_shop(db=db, coffee_shop=coffee_shop)
     if not client:
         raise HTTPException(status_code=400, detail="Кав'ярню не знайдено")
     products = crud.get_products(db, client.id)
+    return products
+
+
+@app.get("/{coffee_shop}/products/{category}")
+def get_products_by_category(coffee_shop: str, category: str, db: Session = Depends(get_db)):
+    client: schemas.Client = crud.get_client_by_coffee_shop(db=db, coffee_shop=coffee_shop)
+    if not client:
+        raise HTTPException(status_code=400, detail="Кав'ярню не знайдено")
+    products = crud.get_products_by_category(db, client.id, category)
     return products
 
 
