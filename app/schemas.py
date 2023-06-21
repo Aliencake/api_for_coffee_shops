@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 
 class ProductBase(BaseModel):
     name: str
+    price: int
     composition: str | None = None
     allergens: str | None = None
     count: int = 0

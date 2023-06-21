@@ -20,6 +20,7 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
+    price = Column(Integer, index=True)
     name = Column(String(255), index=True)
     composition = Column(String(255), index=True)
     allergens = Column(String(255), index=True)
